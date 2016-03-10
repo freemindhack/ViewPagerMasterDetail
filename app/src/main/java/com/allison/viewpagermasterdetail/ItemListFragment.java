@@ -2,6 +2,7 @@ package com.allison.viewpagermasterdetail;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -85,8 +86,8 @@ public class ItemListFragment extends BaseFragment{
         }
 
         Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle("List");
-
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
     }
