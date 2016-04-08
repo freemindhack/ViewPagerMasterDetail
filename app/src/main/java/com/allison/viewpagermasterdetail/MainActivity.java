@@ -1,23 +1,55 @@
 package com.allison.viewpagermasterdetail;
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+
+import java.util.List;
 
 /**
  * Created by CJH on 1/29/2016.
  */
 public class MainActivity extends AppCompatActivity implements Bridge{
-
+    static final String TAG = "MainActivity";
     private ViewPager viewPager = null;
     private MyAdapter mAdapter;
-    PageChangeListener mListener = new PageChangeListener();
+    private int currentPage;
+    //
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+
+
+    ViewPager.OnPageChangeListener mListener = new ViewPager.SimpleOnPageChangeListener(){
+        static final String TAG = "PageChangeListener";
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            Log.d(TAG, "onPageSelected");
+            super.onPageSelected(position);
+            currentPage = position;     // current selected page
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            super.onPageScrollStateChanged(state);
+        }
+    };
+
+    // Keep a reference to listener, need to access this from fragment
+    PageFragmentListener mPageFragmentListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,21 +57,33 @@ public class MainActivity extends AppCompatActivity implements Bridge{
         setContentView(R.layout.activity_main);
 
         viewPager = (ViewPager) findViewById(R.id.pager);
-        viewPager.setOnPageChangeListener(mListener);       // Page Change Listener
+        viewPager.addOnPageChangeListener(mListener);       // Page Change Listener
 
         mAdapter = new MyAdapter(getSupportFragmentManager());
+        mPageFragmentListener = mAdapter.mListener;         // Set the listener
         viewPager.setAdapter(mAdapter);
+
+        //
+        toolbar = (Toolbar)findViewById(R.id.toolbar1);
+        setSupportActionBar(toolbar);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        //
+        tabLayout = (TabLayout)findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+
     }
 
     @Override
     public void onBackPressed() {
-        if (mListener.getCurrentPage()==2 && mAdapter.mFragment instanceof ItemOneDetailFragment) {     // current page is Tab-3, current fragment is detail fragment
+        if (currentPage==2 && mAdapter.mFragment instanceof ItemOneDetailFragment) {     // current page is Tab-3, current fragment is detail fragment
+            Log.d(TAG, "onBackPressed(): currentPage="+currentPage);
             mAdapter.mListener.onSwitchToNextFragment("0");     // show List fragment
             return;     // prevent to finish app.
         }
@@ -53,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements Bridge{
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            if (mListener.getCurrentPage() == 2 && mAdapter.mFragment instanceof ItemOneDetailFragment) {     // current page is Tab-3, current fragment is detail fragment
+            if (currentPage == 2 && mAdapter.mFragment instanceof ItemOneDetailFragment) {     // current page is Tab-3, current fragment is detail fragment
+                Log.d(TAG, "onOptionsItemsSelected(): currentPage="+currentPage);
                 mAdapter.mListener.onSwitchToNextFragment("0");     // show List fragment
 //                return;     // prevent to finish app.
             }
@@ -68,30 +113,10 @@ public class MainActivity extends AppCompatActivity implements Bridge{
 }
 
 /**
- * Fragment Page Change Listener
- */
-class PageChangeListener extends ViewPager.SimpleOnPageChangeListener {
-    private int currentPage;
-
-    @Override
-    public void onPageSelected(int position) {
-        currentPage = position;     // current selected page
-    }
-
-    /**
-     * Get current selected page.
-     * @return page index
-     */
-    public final int getCurrentPage() {
-        return currentPage;
-    }
-}
-
-/**
  * Fragment Page Adapter
  */
-class MyAdapter extends FragmentPagerAdapter{
-
+class MyAdapter extends FragmentStatePagerAdapter {
+    static final String TAG = "MyAdapter";
     private final FragmentManager mFragmentManager;
     public BaseFragment mFragment;
 
@@ -101,27 +126,44 @@ class MyAdapter extends FragmentPagerAdapter{
     public PageFragmentListener mListener = new PageFragmentListener() {
         @Override
         public void onSwitchToNextFragment(final String id) {
+            Log.d(TAG, "remove");
             mFragmentManager.beginTransaction().remove(mFragment).commit();
+            Log.d(TAG, "if instance");
             if (mFragment instanceof ItemListFragment){     // current fragment is List Fragment
+                Log.d(TAG, "new bundle");
                 Bundle arguments = new Bundle();
+                Log.d(TAG, "arguments");
                 arguments.putString(Constants.ARG_ITEM_ID, id);     // selected item id
+                Log.d(TAG, "ItemOneDetailFragment.newInstance");
                 mFragment = ItemOneDetailFragment.newInstance(mListener);       // switch detail fragment
+                Log.d(TAG, "setARgs");
                 mFragment.setArguments(arguments);
             }else{      // DetailFragment
+                Log.d(TAG, "ItemListFragment.newInstance");
                 mFragment = ItemListFragment.newInstance(mListener);    // => switch list fragment
             }
-
+            Log.d(TAG, "notify");
             notifyDataSetChanged();     // notify changes
         }
     };
 
     public MyAdapter(FragmentManager fm) {
         super(fm);
+        Log.d(TAG, "MyAdapterConstructor");
         mFragmentManager = fm;
-    }
+        List<Fragment> fragments = fm.getFragments();
+        if(fragments != null){
+            for(Fragment f : fragments){
+                if(f instanceof ItemListFragment || f instanceof ItemOneDetailFragment){
+                    mFragment = (BaseFragment) f;
+                }
+            }
+        }
+     }
 
     @Override
     public Fragment getItem(int position) {
+        Log.d(TAG, "getItem()");
         if (position == 0)      // Tab-1
             return FragmentA.newInstance();
 
@@ -134,17 +176,17 @@ class MyAdapter extends FragmentPagerAdapter{
 
             return mFragment;
         }
-
         return null;
     }
 
     /**
      * To set tab title.
-     * @param position
-     * @return
+     * @param position the currently visible ViewPager fragment
+     * @return the title of the fragment
      */
     @Override
     public CharSequence getPageTitle(int position) {
+        Log.d(TAG, "getPageTitle()");
         if (position == 0) {    // Tab-1
             return "Tab 1";
         }

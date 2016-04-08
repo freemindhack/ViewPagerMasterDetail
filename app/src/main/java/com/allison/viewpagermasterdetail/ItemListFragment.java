@@ -1,10 +1,12 @@
 package com.allison.viewpagermasterdetail;
 
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,7 @@ import java.util.List;
  */
 public class ItemListFragment extends BaseFragment{
 
+    static final String TAG = "ItemListFragment";
     private boolean mTwoPane = false;
     private PageFragmentListener mListener;
 
@@ -27,9 +30,16 @@ public class ItemListFragment extends BaseFragment{
      * @return ItemListFragment
      */
     public static ItemListFragment newInstance(PageFragmentListener listener) {
+        Log.d(TAG, "newInstance()");
         ItemListFragment fragment = new ItemListFragment();
         fragment.mListener = listener;
         return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate()");
+        super.onCreate(savedInstanceState);
     }
 
     /**
@@ -42,42 +52,65 @@ public class ItemListFragment extends BaseFragment{
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView()");
         View root = inflater.inflate(R.layout.fragment_item_list, container, false);
         initLayout(root);
         return root;
     }
 
-    /**
-     * Configuration Changed. (landscape or portrait)
-     * @param newConfig
-     */
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated()");
+        Activity activity = getActivity();
+        if (activity instanceof MainActivity){
+            mListener = ((MainActivity)activity).mPageFragmentListener;
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        Log.d(TAG, "onAttach()");
+        super.onAttach(activity);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState()");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDetach() {
+        Log.d(TAG, "onDetach()");
+        super.onDetach();
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.d(TAG, "onDestroyView()");
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+        super.onDestroy();
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        populateViewForOrientation(inflater, (ViewGroup) getView());
+        Log.d(TAG, "onConfigurationChanged()");
     }
 
     /**
-     *  Refresh Layout.
-     *
-     * @param inflater
-     * @param viewGroup
-     */
-    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
-        viewGroup.removeAllViewsInLayout();
-        View subview = inflater.inflate(R.layout.fragment_item_list, viewGroup);
-
-        initLayout(subview);
-    }
-
-    /**
-     * Initialize Componenents.
+     * Initialize Components.
      *
      * @param root
      */
     public void initLayout(View root) {
+        Log.d(TAG, "initLayout()");
         View recyclerView = root.findViewById(R.id.item_list);
 
         mTwoPane = false;
@@ -85,7 +118,7 @@ public class ItemListFragment extends BaseFragment{
             mTwoPane = true;            // currently loaded "layout-land/list_item".  landscape mode
         }
 
-        Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar2);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle("List");
         assert recyclerView != null;
@@ -98,6 +131,7 @@ public class ItemListFragment extends BaseFragment{
      * @param recyclerView
      */
     private void setupRecyclerView(RecyclerView recyclerView) {
+        Log.d(TAG, "setupRecyclerView");
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
     }
 
@@ -146,6 +180,7 @@ public class ItemListFragment extends BaseFragment{
                         getActivity().getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
                                 .commit();
+
                     } else {    // portrait mode
                         if (mListener!=null)
                             mListener.onSwitchToNextFragment(holder.mItem.id);      // switch detail fragment

@@ -1,7 +1,10 @@
 package com.allison.viewpagermasterdetail;
 
+import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +21,8 @@ public class ItemOneDetailFragment extends BaseFragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
+
+    static final String TAG = "ItemOneDetailFragment";
 
     /**
      * The dummy content this fragment is presenting.
@@ -36,6 +41,7 @@ public class ItemOneDetailFragment extends BaseFragment {
      * @return
      */
     public static ItemOneDetailFragment newInstance(PageFragmentListener listener) {
+        Log.d(TAG,"newInstance()");
         ItemOneDetailFragment fragment = new ItemOneDetailFragment();
         fragment.mListener = listener;
         return fragment;
@@ -50,6 +56,7 @@ public class ItemOneDetailFragment extends BaseFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG,"onCreate()");
         super.onCreate(savedInstanceState);
 
 //        MainActivity activity = (MainActivity) getActivity();
@@ -66,7 +73,7 @@ public class ItemOneDetailFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        Log.d(TAG,"onCreateView()");
         View rootView = inflater.inflate(R.layout.fragment_item_one_detail, container, false);
 
         // Show the dummy content as text in a TextView.
@@ -95,4 +102,39 @@ public class ItemOneDetailFragment extends BaseFragment {
         return rootView;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged()");
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        Log.d(TAG,"onAttach()");
+        super.onAttach(activity);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState()");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDetach() {
+        Log.d(TAG,"onDetach()");
+        super.onDetach();
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.d(TAG,"onDestroyView");
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG,"onDestroy()");
+        super.onDestroy();
+    }
 }
